@@ -143,7 +143,12 @@ func getAbsenteeism(client *http.Client) {
 	doc, err := goquery.NewDocumentFromResponse(res)
 	check(err, true)
 
-	doc.Find("tr.RowStyle").Add("tr.AlternatingRowStyle").Each(func(i int, s *goquery.Selection) {
+	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
+		className := s.AttrOr("class", "")
+		if className != "RowStyle" && className != "AlternatingRowStyle" {
+			return
+		}
+
 		s.Find("td").Each(func(ii int, ss *goquery.Selection) {
 			text := strings.TrimSpace(ss.Text())
 
