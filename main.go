@@ -51,11 +51,12 @@ func (u *user) init() {
 	u.Password = inputPassword()
 
 	if input("要儲存你的帳號密碼嗎？ [Y/n] ") == "n" {
+		fmt.Println("")
 		return
 	}
 
 	u.export()
-	fmt.Printf("你的資料已經被儲存在 '%s' 了\n", filePath)
+	fmt.Printf("你的資料已經被儲存在 '%s' 了\n\n", filePath)
 }
 
 func (u user) toJSON(pretty bool) string {
