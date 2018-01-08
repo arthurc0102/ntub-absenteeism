@@ -47,14 +47,15 @@ func (u *user) init() {
 		return
 	}
 
-	u.Username = input("Account: ")
+	u.Username = input("帳號: ")
 	u.Password = inputPassword()
 
-	if input("Do you want to save your info? [Y/n] ") == "n" {
+	if input("要儲存你的帳號密碼嗎？ [Y/n] ") == "n" {
 		return
 	}
 
 	u.export()
+	fmt.Printf("你的資料已經被儲存在 '%s' 了\n", filePath)
 }
 
 func (u user) toJSON(pretty bool) string {
@@ -194,7 +195,7 @@ func input(ask string) string {
 }
 
 func inputPassword() string {
-	fmt.Print("Password: ")
+	fmt.Print("密碼: ")
 	bytesPassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	fmt.Print("\n")
 	check(err, true)
