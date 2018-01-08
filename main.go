@@ -21,15 +21,18 @@ import (
 )
 
 const debug = true
-const tag = "ntub-attendance"
+
+// route
 const baseURL = "http://ntcbadm.ntub.edu.tw"
 const loginURL = baseURL + "/login.aspx"
-const loginSuccessURL = baseURL + "/Portal/indexSTD.aspx"
+const indexURL = baseURL + "/Portal/indexSTD.aspx"
+const absenteeismURL = baseURL + "/StdAff/STDWeb/ABS_SearchSACP.aspx"
 
+var title = [4]string{"假別", "日期", "星期", "節次"}
 var filePath = func() string {
 	u, e := osUser.Current()
 	check(e, true)
-	return path.Join(u.HomeDir, "."+tag+".json")
+	return path.Join(u.HomeDir, ".ntub-attendance.json")
 }()
 
 type user struct {
@@ -100,7 +103,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	getAttendance(client)
+	fmt.Print("學號：" + currentUser.Username + "\n\n")
+	getAbsenteeism(client)
 }
 
 func login(username string, password string) (*http.Client, bool) {
@@ -129,11 +133,35 @@ func login(username string, password string) (*http.Client, bool) {
 	check(err, true)
 
 	defer res.Body.Close()
-	return client, res.Request.URL.String() == loginSuccessURL
+	return client, res.Request.URL.String() == indexURL
 }
 
-func getAttendance(client *http.Client) {
+func getAbsenteeism(client *http.Client) {
+	res, err := client.Get(absenteeismURL)
+	check(err, true)
 
+	doc, err := goquery.NewDocumentFromResponse(res)
+	check(err, true)
+
+	doc.Find("tr.RowStyle").Add("tr.AlternatingRowStyle").Each(func(i int, s *goquery.Selection) {
+		s.Find("td").Each(func(ii int, ss *goquery.Selection) {
+			text := strings.TrimSpace(ss.Text())
+
+			if ii == 3 {
+				text = strings.Replace(text, ",", ", ", -1)
+			}
+
+			fmt.Println(title[ii] + "：" + text)
+		})
+
+		fmt.Println("")
+	})
+
+	text := doc.Find("#ctl00_ContentPlaceHolder1_Lab_count").Text()
+	text = strings.Split(text, "：")[1]
+	text = strings.Replace(text, "     ", " ", -1)
+	text = strings.Replace(text, " 、 ", "、", -1)
+	fmt.Println("統計：" + text)
 }
 
 func check(err error, leave bool) {
